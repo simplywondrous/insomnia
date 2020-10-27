@@ -457,7 +457,7 @@ class WrapperHome extends React.PureComponent<Props, State> {
             gridRight={this.renderMenu()}
           />
         )}
-        renderPageBody={() => (
+        renderPaneOne={() => (
           <div className="document-listing theme--pane layout-body pad-top">
             <div className="document-listing__body">
               <CardContainer>{cards}</CardContainer>

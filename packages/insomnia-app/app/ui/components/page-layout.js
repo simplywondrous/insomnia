@@ -1,6 +1,7 @@
 // @flow
 import * as React from 'react';
 import autobind from 'autobind-decorator';
+import styled from 'styled-components';
 import type { WrapperProps } from './wrapper';
 import classnames from 'classnames';
 import ErrorBoundary from './error-boundary';
@@ -13,7 +14,6 @@ type Props = {
   // Render props
   renderPageSidebar?: () => React.Node,
   renderPageHeader?: () => React.Node,
-  renderPageBody?: () => React.Node,
   renderPaneOne?: () => React.Node,
   renderPaneTwo?: () => React.Node,
 };
@@ -34,7 +34,6 @@ class PageLayout extends React.PureComponent<Props, State> {
     const {
       renderPaneOne,
       renderPaneTwo,
-      renderPageBody,
       renderPageHeader,
       renderPageSidebar,
       wrapperProps,
@@ -78,6 +77,18 @@ class PageLayout extends React.PureComponent<Props, State> {
     const gridColumns =
       `auto ${realSidebarWidth}rem 0 ` +
       `${paneTwo ? `minmax(0, ${paneWidth}fr) 0 minmax(0, ${1 - paneWidth}fr)` : '1fr'}`;
+
+    const Pane = styled.section`
+      min-width: 0;
+      grid-column-start: ${props =>
+        props.primary ? (paneTwo ? '4' : '2') : props.secondary ? '6' : 'never'};
+      grid-column-end: span ${props => (props.primary && !paneTwo ? '3' : '2')};
+      grid-row-start: 2;
+      grid-row-end: span 3;
+      border-left: ${props => (props.primary && !paneTwo ? 'none' : '1px solid var(--hl-md)')};
+      background: var(--color-bg);
+      color: var(--color-font);
+    `;
 
     return (
       <div
@@ -157,42 +168,44 @@ class PageLayout extends React.PureComponent<Props, State> {
             </div>
           </ErrorBoundary>
         )}
-        {renderPageBody ? (
-          <ErrorBoundary showAlert>{renderPageBody()}</ErrorBoundary>
-        ) : (
-          <>
-            {renderPaneOne && (
-              <ErrorBoundary showAlert>
-                <Pane position="one" ref={handleSetRequestPaneRef}>
+        <>
+          {renderPaneOne && (
+            <ErrorBoundary showAlert>
+              {/* <Pane position="one" ref={handleSetRequestPaneRef}>
                   {renderPaneOne()}
+                </Pane> */}
+              <Pane primary className="theme--pane" ref={handleSetRequestPaneRef}>
+                {renderPaneOne()}
+              </Pane>
+            </ErrorBoundary>
+          )}
+          {paneTwo && (
+            <>
+              <div className="drag drag--pane-horizontal">
+                <div
+                  onMouseDown={handleStartDragPaneHorizontal}
+                  onDoubleClick={handleResetDragPaneHorizontal}
+                />
+              </div>
+
+              <div className="drag drag--pane-vertical">
+                <div
+                  onMouseDown={handleStartDragPaneVertical}
+                  onDoubleClick={handleResetDragPaneVertical}
+                />
+              </div>
+
+              <ErrorBoundary showAlert>
+                {/* <Pane position="two" ref={handleSetResponsePaneRef}>
+                    {paneTwo}
+                  </Pane> */}
+                <Pane secondary className="theme--pane" ref={handleSetResponsePaneRef}>
+                  {paneTwo}
                 </Pane>
               </ErrorBoundary>
-            )}
-            {paneTwo && (
-              <>
-                <div className="drag drag--pane-horizontal">
-                  <div
-                    onMouseDown={handleStartDragPaneHorizontal}
-                    onDoubleClick={handleResetDragPaneHorizontal}
-                  />
-                </div>
-
-                <div className="drag drag--pane-vertical">
-                  <div
-                    onMouseDown={handleStartDragPaneVertical}
-                    onDoubleClick={handleResetDragPaneVertical}
-                  />
-                </div>
-
-                <ErrorBoundary showAlert>
-                  <Pane position="two" ref={handleSetResponsePaneRef}>
-                    {paneTwo}
-                  </Pane>
-                </ErrorBoundary>
-              </>
-            )}
-          </>
-        )}
+            </>
+          )}
+        </>
       </div>
     );
   }
@@ -200,10 +213,10 @@ class PageLayout extends React.PureComponent<Props, State> {
 
 export default PageLayout;
 
-class Pane extends React.PureComponent {
-  render() {
-    return (
-      <section className={`pane-${this.props.position} theme--pane`}>{this.props.children}</section>
-    );
-  }
-}
+// class Pane extends React.PureComponent {
+//   render() {
+//     return (
+//       <section className={`pane-${this.props.position} theme--pane`}>{this.props.children}</section>
+//     );
+//   }
+// }
